@@ -158,6 +158,7 @@ def define_mnist_flags():
       distribution_strategy=True)
   flags_core.define_device()
   flags_core.define_distribution()
+  flags.DEFINE_string('zone', None, '')
   flags.DEFINE_bool('download', False,
                     'Whether to download data to `--data_dir`.')
   flags.DEFINE_integer('profiler_port', 9012,
