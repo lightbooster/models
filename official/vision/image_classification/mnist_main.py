@@ -87,7 +87,8 @@ def run(flags_obj, datasets_override=None, strategy_override=None):
   strategy = strategy_override or distribute_utils.get_distribution_strategy(
       distribution_strategy=flags_obj.distribution_strategy,
       num_gpus=flags_obj.num_gpus,
-      tpu_address=flags_obj.tpu)
+      tpu_address=flags_obj.tpu,
+      zone=flags_obj.zone)
 
   strategy_scope = distribute_utils.get_strategy_scope(strategy)
 

@@ -73,17 +73,21 @@ def _mirrored_cross_device_ops(all_reduce_alg, num_packs):
   return cross_device_ops_class(num_packs=num_packs)
 
 
-def tpu_initialize(tpu_address):
+def tpu_initialize(tpu_address, zone):
   """Initializes TPU for TF 2.x training.
 
   Args:
     tpu_address: string, bns address of master TPU worker.
-
+    zone: string, tpu location zone
   Returns:
     A TPUClusterResolver.
   """
-  cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
-      tpu=tpu_address)
+  if zone is None:
+      cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
+          tpu=tpu_address)
+  else:
+      cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
+      tpu=tpu_address, zone=zone)
   if tpu_address not in ("", "local"):
     tf.config.experimental_connect_to_cluster(cluster_resolver)
   tf.tpu.experimental.initialize_tpu_system(cluster_resolver)
@@ -95,6 +99,7 @@ def get_distribution_strategy(distribution_strategy="mirrored",
                               all_reduce_alg=None,
                               num_packs=1,
                               tpu_address=None,
+                              zone=None,
                               **kwargs):
   """Return a DistributionStrategy for running the model.
 
@@ -114,6 +119,7 @@ def get_distribution_strategy(distribution_strategy="mirrored",
       or `tf.distribute.HierarchicalCopyAllReduce` for `MirroredStrategy`.
     tpu_address: Optional. String that represents TPU to connect to. Must not be
       None if `distribution_strategy` is set to `tpu`.
+    zone: Optional. String, tpu location zone.
     **kwargs: Additional kwargs for internal usages.
 
   Returns:
@@ -145,7 +151,7 @@ def get_distribution_strategy(distribution_strategy="mirrored",
 
   if distribution_strategy == "tpu":
     # When tpu_address is an empty string, we communicate with local TPUs.
-    cluster_resolver = tpu_initialize(tpu_address)
+    cluster_resolver = tpu_initialize(tpu_address, zone)
     return tf.distribute.TPUStrategy(cluster_resolver)
 
   if distribution_strategy == "multi_worker_mirrored":
